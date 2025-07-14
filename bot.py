@@ -67,8 +67,11 @@ async def handle_response(text, chat_id, money=False, update: Update=None, conte
                 await update.message.reply_text(f'{response.text.replace("True.", "").replace("*", "")}')
                 return
 
-        elif (update.message.reply_to_message is not None) and update.message.reply_to_message.voice and update.message.text.lower() == 'транскрипція':
-            audio = await update.message.reply_to_message.voice.get_file()
+        elif (update.message.reply_to_message is not None) and (update.message.reply_to_message.voice or update.message.reply_to_message.video_note) and update.message.text.lower() == 'транскрипція':
+            if update.message.reply_to_message.voice:
+                audio = await update.message.reply_to_message.voice.get_file()
+            else:
+                audio = await update.message.reply_to_message.video_note.get_file()
             await audio.download_to_drive('./voice.oga')
             return await handle_voice(update, context, file=True)
 
