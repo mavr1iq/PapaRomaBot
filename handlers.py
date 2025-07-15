@@ -76,6 +76,11 @@ async def handle_response(text, chat_id, money=False, update: Update=None, conte
         url = text.split('?')[0]
         return get_content.get_tiktok(url)
 
+    if "https://www.instagram.com/reel" in text:
+        url = text.split('?')[0]
+        id = url.split('/')[-2]
+        return await get_content.get_reels(id, url)
+
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message_type = update.message.chat.type
@@ -107,6 +112,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 file_objects[i].close()
                 os.remove(f'{i}.jpg')
             os.remove('audio.mp3')
+
+    if "https://www.instagram.com/reel" in text:
+        path = f'reel/reel.mp4'
+        await context.bot.send_video(chat_id=update.message.chat.id, video=open(path, 'rb'), supports_streaming=True)
+        os.remove(path)
 
     elif response:
         print(f"Bot: {response}")
