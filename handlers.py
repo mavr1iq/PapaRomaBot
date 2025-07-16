@@ -122,6 +122,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         print(f"Bot: {response}")
         await context.bot.send_message(update.message.chat.id, response)
 
+
 async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE = None, file = False):
     message_type = update.message.chat.type
     if not file:

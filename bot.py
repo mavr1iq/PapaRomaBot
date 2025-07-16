@@ -5,6 +5,7 @@ from config import *
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
 
+
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text('Прівєт. Цей бот створений як колектор для забирання грошей на спотіфай преміум')
 
@@ -18,6 +19,7 @@ async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 print('Bot started')
+
 
 def main():
     app = Application.builder().token(API_TOKEN).build()
@@ -34,6 +36,7 @@ def main():
     print('Polling')
 
     app.run_polling(poll_interval=3)
+
 
 if __name__ == '__main__':
     main()

@@ -4,6 +4,7 @@ import time
 import instaloader
 from config import INSTA_PASS, INSTA_USER
 
+
 def get_tiktok(url):
     if 'video' in url:
         pyk.save_tiktok(url, True)
@@ -40,6 +41,7 @@ def get_tiktok(url):
 
         return url, path, video, count
 
+
 async def get_reels(reel_id, url):
     loader = instaloader.Instaloader(
     save_metadata=False,
@@ -50,11 +52,5 @@ async def get_reels(reel_id, url):
     loader.login(INSTA_USER, INSTA_PASS)
     loader.filename_pattern = 'reel'
     print('Downloading reel: ', url)
-    profile = instaloader.Post.from_shortcode(loader.context,reel_id).owner_profile
-
-    for reel in profile.get_reels():
-        if reel_id == reel.shortcode:
-            print(f'Found reel: {reel.shortcode}')
-            loader.download_post(reel, 'reel')
-            break
-        print(f'Skipping reel: {reel.shortcode}')
+    reel = instaloader.Post.from_shortcode(loader.context,reel_id)
+    loader.download_post(reel, 'reel')
