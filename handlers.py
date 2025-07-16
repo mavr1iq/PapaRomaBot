@@ -113,7 +113,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 os.remove(f'{i}.jpg')
             os.remove('audio.mp3')
 
-    if "https://www.instagram.com/reel" in text:
+    elif "https://www.instagram.com/reel" in text:
         path = f'reel/reel.mp4'
         await context.bot.send_video(chat_id=update.message.chat.id, video=open(path, 'rb'), supports_streaming=True)
         os.remove(path)
