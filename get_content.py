@@ -49,7 +49,12 @@ async def get_reels(reel_id, url):
     download_video_thumbnails=False,
     post_metadata_txt_pattern="")
 
-    loader.login(INSTA_USER, INSTA_PASS)
+    try:
+        loader.load_session_from_file(username=INSTA_USER, filename='profile')
+    except:
+        loader.login(INSTA_USER, INSTA_PASS)
+        loader.save_session_to_file('profile')
+
     loader.filename_pattern = 'reel'
     print('Downloading reel: ', url)
     reel = instaloader.Post.from_shortcode(loader.context,reel_id)
