@@ -3,6 +3,7 @@ import requests
 import time
 import instaloader
 from config import INSTA_PASS, INSTA_USER
+import os
 
 
 def get_tiktok(url):

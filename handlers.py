@@ -76,10 +76,10 @@ async def handle_response(text, chat_id, money=False, update: Update=None, conte
         url = text.split('?')[0]
         return get_content.get_tiktok(url)
 
-    if "https://www.instagram.com/reel" in text:
+    if "https://www.instagram.com/" in text:
         url = text.split('?')[0]
         id = url.split('/')[-2]
-        return await get_content.get_reels(id, url)
+        return await get_content.get_reels(id, url), os.path.isfile('reel/reel.jpg')
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -113,9 +113,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 os.remove(f'{i}.jpg')
             os.remove('audio.mp3')
 
-    elif "https://www.instagram.com/reel" in text:
+    elif "https://www.instagram.com/" in text and not response[1]:
         path = f'reel/reel.mp4'
         await context.bot.send_video(chat_id=update.message.chat.id, video=open(path, 'rb'), supports_streaming=True)
+        os.remove(path)
+    elif "https://www.instagram.com/" in text and response[1]:
+        path = f'reel/reel.jpg'
+        await context.bot.send_photo(chat_id=update.message.chat.id, photo=open(path, 'rb'))
         os.remove(path)
 
     elif response:
