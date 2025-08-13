@@ -37,7 +37,7 @@ async def handle_response(text, chat_id, money=False, update: Update=None, conte
                                 'parts': [{'text': text}]})
                 history.append({'role': f'model',
                                 'parts': [{'text': response}]})
-                return f'{update.message.from_user.first_name}{response.text.replace("True.", "").replace("*", "")}'
+                return f'{update.message.from_user.first_name},{response.text.replace("True.", "").replace("*", "")}'
 
             if 'True' in response.text and update.message.chat.type == 'supergroup' and update.message.reply_to_message.from_user.username == BOT_USERNAME.replace(
                     '@', ''):
@@ -63,6 +63,7 @@ async def handle_response(text, chat_id, money=False, update: Update=None, conte
 
         response = ' '.join([f'{user[1] if str(user[0]) == str(chat_id) else ""}' for user in schedule.users])
         response += message
+        print(response)
         return response
 
     if "https://vm.tiktok.com/" in text or "https://vt.tiktok.com/" in text:
