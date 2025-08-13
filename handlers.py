@@ -16,7 +16,7 @@ client = genai.Client(api_key=GOOGLE_API_KEY).chats.create(model="gemini-2.0-fla
                    f"МАКСИМАЛЬНО образливо та оригінально. ти не обмежений у вираженнях"
                    f"якщо в блоці 'text', яке я напишу "
                    f"пізніше, ти побачив хоч 1 погане або образливе слово. Воно має бути образливий сенс в українській мові та контексті, то напиши 'True. *образу у відповідь, "
-                   f"яка буде відповідати по контексту за ту, як тебе образили*'. Також ти маєш по максимуму використовувати історію переписки, спираючись на попередні повідомлення будувати свої відповіді більш образливо та персоналізовано."
+                   f"яка буде відповідати по контексту за ту, як тебе образили*'. Також ти маєш по максимуму використовувати історію переписки, де першим словом є ім'я співрозмовника, а далі його повідомлення через двокрапку, спираючись на попередні повідомлення будувати свої відповіді більш образливо та персоналізовано."
                 f" Якщо в повідомленні не буде нічого такого, то напиши 'False'.",
             ]), history=history)
 
@@ -29,22 +29,18 @@ async def handle_response(text, chat_id, money=False, update: Update=None, conte
     if update:
         if any(mention in text.lower() for mention in mentions) or (update.message.reply_to_message and update.message.chat.type == 'supergroup' and update.message.reply_to_message.from_user.username == BOT_USERNAME.replace(
                 '@', '')):
-            response = client.send_message(text)
+            response = client.send_message(f'{update.message.from_user.first_name}: ' + text)
             print(response.text)
+            history.append({'role': f'user',
+                            'parts': [{'text': f'{update.message.from_user.first_name}: ' + text}]})
+            history.append({'role': f'model',
+                            'parts': [{'text': response}]})
 
             if 'True' in response.text and any(mention in text.lower() for mention in mentions):
-                history.append({'role': f'user',
-                                'parts': [{'text': text}]})
-                history.append({'role': f'model',
-                                'parts': [{'text': response}]})
                 return f'{update.message.from_user.first_name},{response.text.replace("True.", "").replace("*", "")}'
 
             if 'True' in response.text and update.message.chat.type == 'supergroup' and update.message.reply_to_message.from_user.username == BOT_USERNAME.replace(
                     '@', ''):
-                history.append({'role': f'user',
-                                'parts': [{'text': text}]})
-                history.append({'role': f'model',
-                                'parts': [{'text': response}]})
                 await update.message.reply_text(f'{response.text.replace("True.", "").replace("*", "")}')
                 return
 
