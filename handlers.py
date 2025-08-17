@@ -26,6 +26,7 @@ content_handlers = {
     "vm.tiktok.com": get_content.get_tiktok,
     "vt.tiktok.com": get_content.get_tiktok,
     "www.instagram.com": get_content.get_instagram,
+    "x.com": get_content.get_twitter,
 }
 
 
@@ -43,7 +44,7 @@ async def handle_response(text, chat_id, money=False, update: Update=None, conte
                             'parts': [{'text': response}]})
 
             if 'True' in response.text and any(mention in text.lower() for mention in mentions):
-                return f'{update.message.from_user.first_name},{response.text.replace("True.", "").replace("*", "")}'
+                return f'{response.text.replace("True.", "").replace("*", "")}'
 
             if 'True' in response.text and update.message.chat.type == 'supergroup' and update.message.reply_to_message.from_user.username == BOT_USERNAME.replace(
                     '@', ''):
@@ -93,7 +94,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if response.get("video"):
         print(f'Bot: Sending video from url {response.get("url")}')
-        await context.bot.send_video(chat_id=update.message.chat.id, video=open(response.get("path"), 'rb'), supports_streaming=True)
+
+        await context.bot.send_video(chat_id=update.message.chat.id, video=open(response.get("path"), 'rb'), supports_streaming=True, caption=response.get("title"))
+
         os.remove(response.get("path"))
 
     if not response.get("video"):
@@ -107,13 +110,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 file_objects.append(f)
                 photos.append(InputMediaPhoto(f))
 
-            await context.bot.send_media_group(chat_id=update.message.chat.id, media=photos)
+            await context.bot.send_media_group(chat_id=update.message.chat.id, media=photos, caption=response.get("title"))
 
             for i in range(1, response.get("count")):
                 file_objects[i-1].close()
                 os.remove(f'{response.get("path")}{i}.jpg')
         else:
-            await context.bot.send_photo(chat_id=update.message.chat.id, photo=open(response.get("path"), 'rb'))
+            await context.bot.send_photo(chat_id=update.message.chat.id, photo=open(response.get("path"), 'rb'), caption=response.get("title"))
             os.remove(response.get("path"))
 
     if response.get("audio"):

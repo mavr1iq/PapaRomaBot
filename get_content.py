@@ -4,6 +4,9 @@ import pyktok as pyk
 import requests
 import time
 import instaloader
+import yt_dlp
+from gallery_dl import config, job
+
 from config import INSTA_PASS, INSTA_USER
 
 
@@ -99,5 +102,63 @@ async def get_instagram(url):
         "path": new_path,
         "count": count
     }
+
+    return response
+
+
+async def get_twitter(url):
+    path = '1'
+    ydl_opts = {
+        'outtmpl': path,
+    }
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+            info = ydl.extract_info(url, download=False)
+            print(info.keys())
+            ext = info['ext']
+            title = info['title']
+            os.rename(path, f'path.{ext}')
+            path = f'path.{ext}'
+
+            response = {
+                "url": url,
+                "title": title,
+                'path': path,
+                'video': True,
+            }
+
+    except yt_dlp.utils.DownloadError:
+        print(url)
+        config.set(("output",), "directory", [path])
+        j = job.DownloadJob(url)
+        j.run()
+
+        result = None
+        for result in j.extractor:
+            if result:
+                result = result
+                break
+
+        result = result[1]
+        title = result['content']
+        user = result['author']['name']
+
+        path = f'gallery-dl/twitter/{user}/{url.split("/")[5]}'
+
+        new_path = path
+
+        count = 1
+        while os.path.isfile(f"{path}_{count}.jpg"):
+            new_path = f"{path}_"
+            count += 1
+
+        response = {
+            "url": url,
+            "title": title,
+            "path": new_path,
+            "video": False,
+            "count": count,
+        }
 
     return response
