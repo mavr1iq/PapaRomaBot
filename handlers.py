@@ -1,5 +1,4 @@
 import os
-import requests
 import schedule
 import get_content
 
@@ -21,6 +20,13 @@ client = genai.Client(api_key=GOOGLE_API_KEY).chats.create(model="gemini-2.0-fla
             ]), history=history)
 
 transcribe = (genai.Client(api_key=GOOGLE_API_KEY))
+
+content_handlers = {
+    "www.tiktok.com": get_content.get_tiktok,
+    "vm.tiktok.com": get_content.get_tiktok,
+    "vt.tiktok.com": get_content.get_tiktok,
+    "www.instagram.com": get_content.get_instagram,
+}
 
 
 async def handle_response(text, chat_id, money=False, update: Update=None, context: ContextTypes.DEFAULT_TYPE=None):
@@ -62,21 +68,12 @@ async def handle_response(text, chat_id, money=False, update: Update=None, conte
         print(response)
         return response
 
-    if "https://vm.tiktok.com/" in text or "https://vt.tiktok.com/" in text:
-        temp = text.split('/')
-        url = f'https://vm.tiktok.com/{temp[3]}/'
-        url = requests.get(url).url.split('?')[0]
-
-        return get_content.get_tiktok(url)
-
-    elif "https://www.tiktok.com/" in text:
-        url = text.split('?')[0]
-        return get_content.get_tiktok(url)
-
-    if "https://www.instagram.com/" in text:
-        url = text.split('?')[0]
-        id = url.split('/')[-2]
-        return await get_content.get_reels(id, url), os.path.isfile('reel/reel.jpg')
+    if "https://" in text:
+        service = text.split('/')[2]
+        handler = content_handlers.get(service)
+        if handler:
+            url = text.split('?')[0]
+            return await handler(url)
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -87,41 +84,42 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     response = await handle_response(text, update.message.chat.id, update=update, context=context)
 
-    if "https://vm.tiktok.com/" in text or "https://www.tiktok.com/" in text or "https://vt.tiktok.com/" in text:
-        print(text)
-        if response[2]:
-            print(f'Bot: Sending video from url {response[0]}')
-            path = f'{response[1]}.mp4'
-            await context.bot.send_video(chat_id=update.message.chat.id, video=open(path, 'rb'), supports_streaming=True)
-            os.remove(path)
-        else:
-            print(f'Bot: Sending photo and audio from url {response[0]}')
+    if not response:
+        return
+
+    if not isinstance(response, dict):
+        print(f"Bot: {response}")
+        return await context.bot.send_message(update.message.chat.id, response)
+
+    if response.get("video"):
+        print(f'Bot: Sending video from url {response.get("url")}')
+        await context.bot.send_video(chat_id=update.message.chat.id, video=open(response.get("path"), 'rb'), supports_streaming=True)
+        os.remove(response.get("path"))
+
+    if not response.get("video"):
+        if response.get("count"):
+            print(f'Bot: Sending photo(s) from url {response.get("url")}')
             photos = []
             file_objects = []
-            for i in range(response[3]):
-                f = open(f'{i}.jpg', 'rb')
+
+            for i in range(1, response.get("count")):
+                f = open(f'{response.get("path")}{i}.jpg', 'rb')
                 file_objects.append(f)
                 photos.append(InputMediaPhoto(f))
+
             await context.bot.send_media_group(chat_id=update.message.chat.id, media=photos)
-            await context.bot.send_audio(chat_id=update.message.chat.id, audio=open('audio.mp3', 'rb'))
 
-            for i in range(response[3]):
-                file_objects[i].close()
-                os.remove(f'{i}.jpg')
-            os.remove('audio.mp3')
+            for i in range(1, response.get("count")):
+                file_objects[i-1].close()
+                os.remove(f'{response.get("path")}{i}.jpg')
+        else:
+            await context.bot.send_photo(chat_id=update.message.chat.id, photo=open(response.get("path"), 'rb'))
+            os.remove(response.get("path"))
 
-    elif "https://www.instagram.com/" in text and not response[1]:
-        path = f'reel/reel.mp4'
-        await context.bot.send_video(chat_id=update.message.chat.id, video=open(path, 'rb'), supports_streaming=True)
-        os.remove(path)
-    elif "https://www.instagram.com/" in text and response[1]:
-        path = f'reel/reel.jpg'
-        await context.bot.send_photo(chat_id=update.message.chat.id, photo=open(path, 'rb'))
-        os.remove(path)
-
-    elif response:
-        print(f"Bot: {response}")
-        await context.bot.send_message(update.message.chat.id, response)
+    if response.get("audio"):
+        print(f'Bot: Sending audio from url {response.get("url")}')
+        await context.bot.send_audio(chat_id=update.message.chat.id, audio=open('audio.mp3', 'rb'))
+        os.remove('audio.mp3')
 
 
 async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE = None, file = False):
