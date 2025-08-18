@@ -27,6 +27,9 @@ content_handlers = {
     "vt.tiktok.com": get_content.get_tiktok,
     "www.instagram.com": get_content.get_instagram,
     "x.com": get_content.get_twitter,
+    "youtube.com": get_content.get_youtube,
+    "youtu.be": get_content.get_youtube,
+    "www.youtube.com": get_content.get_youtube
 }
 
 
@@ -73,8 +76,7 @@ async def handle_response(text, chat_id, money=False, update: Update=None, conte
         service = text.split('/')[2]
         handler = content_handlers.get(service)
         if handler:
-            url = text.split('?')[0]
-            return await handler(url)
+            return await handler(text)
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -99,7 +101,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         os.remove(response.get("path"))
 
-    if not response.get("video"):
+    if not response.get("video") and not response.get("text"):
         if response.get("count"):
             print(f'Bot: Sending photo(s) from url {response.get("url")}')
             photos = []
@@ -123,6 +125,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         print(f'Bot: Sending audio from url {response.get("url")}')
         await context.bot.send_audio(chat_id=update.message.chat.id, audio=open('audio.mp3', 'rb'))
         os.remove('audio.mp3')
+
+    if response.get("text"):
+        print(f'Bot: Video from {response.get("url")} is to long')
+        await update.message.reply_text(response.get("title"))
 
 
 async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE = None, file = False):

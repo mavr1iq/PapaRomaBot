@@ -65,6 +65,7 @@ async def get_tiktok(url):
 
 
 async def get_instagram(url):
+    url = url.split('?')[0]
     path = 'reel'
     video = True
     reel_id = url.split('/')[-2]
@@ -107,6 +108,7 @@ async def get_instagram(url):
 
 
 async def get_twitter(url):
+    url = url.split('?')[0]
     path = '1'
     ydl_opts = {
         'outtmpl': path,
@@ -160,5 +162,42 @@ async def get_twitter(url):
             "video": False,
             "count": count,
         }
+
+    return response
+
+
+async def get_youtube(url: str):
+    if "shorts" in url:
+        return await get_twitter(url)
+
+    path = '1'
+    duration = 180
+
+    ydl_opts = {
+        'outtmpl': path,
+    }
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=False)
+
+        ext = info['ext']
+        title = info['title']
+
+        if info["duration"] < duration:
+            ydl.download([url])
+            os.rename(path, f'path.{ext}')
+            path = f'path.{ext}'
+
+            response = {
+                "url": url,
+                "title": title,
+                'path': path,
+                'video': True,
+            }
+        else:
+            response = {
+                "url": url,
+                "title": "Занадото довге(",
+                'text': True,
+            }
 
     return response
