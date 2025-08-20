@@ -6,6 +6,7 @@ import time
 import instaloader
 import yt_dlp
 from gallery_dl import config, job
+from yt_dlp.postprocessor import FFmpegPostProcessor
 
 from config import INSTA_PASS, INSTA_USER
 
@@ -46,7 +47,6 @@ async def get_tiktok(url):
             with open("audio.mp3", "wb") as f:
                 f.write(audio)
             print("Saved audio.mp3")
-
 
         video = False
         path = ''
@@ -110,8 +110,10 @@ async def get_instagram(url):
 async def get_twitter(url):
     url = url.split('?')[0]
     path = '1'
+    FFmpegPostProcessor._ffmpeg_location.set(R'./ffmpeg')
     ydl_opts = {
         'outtmpl': path,
+        'ffmpeg-location': './ffmpeg'
     }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -120,8 +122,9 @@ async def get_twitter(url):
             print(info.keys())
             ext = info['ext']
             title = info['title']
-            os.rename(path, f'path.{ext}')
-            path = f'path.{ext}'
+            if not os.path.exists(f"{path}.{ext}"):
+                os.rename(path, f'{path}.{ext}')
+            path = f'{path}.{ext}'
 
             response = {
                 "url": url,
@@ -173,6 +176,7 @@ async def get_youtube(url: str):
     path = '1'
     duration = 180
 
+    FFmpegPostProcessor._ffmpeg_location.set(R'./ffmpeg')
     ydl_opts = {
         'outtmpl': path,
     }

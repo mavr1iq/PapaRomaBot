@@ -17,6 +17,8 @@ RUN pip install --no-cache-dir -r requirements.txt --break-system-packages
 
 RUN playwright install
 
+RUN git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
+
 COPY . .
 
 ENV PORT=8080
