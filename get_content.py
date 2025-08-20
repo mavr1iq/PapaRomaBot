@@ -110,10 +110,8 @@ async def get_instagram(url):
 async def get_twitter(url):
     url = url.split('?')[0]
     path = '1'
-    FFmpegPostProcessor._ffmpeg_location.set(R'ffmpeg/ffmpeg')
     ydl_opts = {
         'outtmpl': path,
-        'ffmpeg_location': 'ffmpeg/ffmpeg'
     }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -176,7 +174,6 @@ async def get_youtube(url: str):
     path = '1'
     duration = 180
 
-    FFmpegPostProcessor._ffmpeg_location.set(R'ffmpeg/ffmpeg')
     ydl_opts = {
         'outtmpl': path,
     }

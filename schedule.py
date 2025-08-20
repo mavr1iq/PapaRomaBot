@@ -3,7 +3,7 @@ import csv
 import handlers
 
 from datetime import datetime, date
-from telegram.ext import ContextTypes, JobQueue
+from telegram.ext import ContextTypes
 
 scheduled = ''
 users = []
