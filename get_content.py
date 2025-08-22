@@ -6,7 +6,9 @@ import time
 import instaloader
 import yt_dlp
 from gallery_dl import config, job
+
 from yt_dlp.postprocessor import FFmpegPostProcessor
+#FFmpegPostProcessor._ffmpeg_location.set(R'ffmpeg/ffmpeg.exe')
 
 from config import INSTA_PASS, INSTA_USER
 
@@ -112,6 +114,7 @@ async def get_twitter(url):
     path = '1'
     ydl_opts = {
         'outtmpl': path,
+        'format_sort': ['res:1080', 'ext:mp4:m4a']
     }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -176,6 +179,7 @@ async def get_youtube(url: str):
 
     ydl_opts = {
         'outtmpl': path,
+        'format_sort': ['res:1080', 'ext:mp4:m4a']
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=False)
