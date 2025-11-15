@@ -69,7 +69,7 @@ async def get_tiktok(url):
 async def get_instagram(url):
     url = url.split('?')[0]
     path = 'reel'
-    video = True
+    video = False
     reel_id = url.split('/')[-2]
     loader = instaloader.Instaloader(
     save_metadata=False,
@@ -89,7 +89,7 @@ async def get_instagram(url):
     loader.download_post(reel, path)
 
     count = 1
-    video = False if os.path.isfile(f"{path}/{path}.jpg") else video
+    video = True if os.path.isfile(f"{path}/{path}.mp4") else video
     new_path = f"{path}/{path}.jpg" if os.path.isfile(f"{path}/{path}.jpg") else f"{path}/{path}.mp4"
 
     while os.path.isfile(f"{path}/{path}_{count}.jpg"):
@@ -121,7 +121,7 @@ async def get_twitter(url):
             ydl.download([url])
             info = ydl.extract_info(url, download=False)
             print(info.keys())
-            ext = info['ext']
+            ext = info['ext'] if 'ext' in info.keys() else info['entries'][0]['formats'][0]['ext']
             title = info['title']
             if not os.path.exists(f"{path}.{ext}"):
                 os.rename(path, f'{path}.{ext}')
