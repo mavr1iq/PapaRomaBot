@@ -6,6 +6,9 @@ import time
 import instaloader
 import yt_dlp
 from gallery_dl import config, job
+from gallery_dl.job import DataJob
+from pandas.core.indexes import extension
+from yt_dlp.globals import extractors
 
 from yt_dlp.postprocessor import FFmpegPostProcessor
 #FFmpegPostProcessor._ffmpeg_location.set(R'ffmpeg/ffmpeg.exe')
@@ -109,7 +112,7 @@ async def get_instagram(url):
     return response
 
 
-async def get_twitter(url):
+async def get_twitter(url, quote = False):
     url = url.split('?')[0]
     path = '1'
     ydl_opts = {
@@ -136,7 +139,9 @@ async def get_twitter(url):
 
     except yt_dlp.utils.DownloadError:
         print(url)
+
         config.set(("output",), "directory", [path])
+        config.set(("downloader",), "filename", f"{path}.jpg")
         j = job.DownloadJob(url)
         j.run()
 
@@ -146,26 +151,71 @@ async def get_twitter(url):
                 result = result
                 break
 
-        result = result[1]
-        title = result['content']
-        user = result['author']['name']
+        config.set(("extractor", "twitter"), "quoted", True)
+        config.set(("extractor", "twitter"), "text-tweets", True)
 
-        path = f'gallery-dl/twitter/{user}/{url.split("/")[5]}'
+        data = DataJob(url)
+        data.run()
+        data = data.data
 
-        new_path = path
+        if not quote:
+            urls = []
 
-        count = 1
-        while os.path.isfile(f"{path}_{count}.jpg"):
-            new_path = f"{path}_"
-            count += 1
+            for i in data:
+                print(i)
+                if i[0] == 2 and i[1]['quote_id'] != 0:
+                    urls.append(f'https://x.com/{i[1]['author']['name']}/status/{i[1]['tweet_id']}')
+                    urls.append(f'https://x.com/{i[1]['user']['name']}/status/{i[1]['quote_id']}')
+                    break
 
-        response = {
-            "url": url,
-            "title": title,
-            "path": new_path,
-            "video": False,
-            "count": count,
-        }
+            config.set(("extractor", "twitter"), "quoted", False)
+            config.set(("extractor", "twitter"), "text-tweets", False)
+
+            if len(urls) == 2:
+                print(quote)
+                print(urls)
+                posts = [None, None]
+                posts[0] = await get_twitter(urls[0], quote=True)
+                posts[1] = await get_twitter(urls[1], quote=True)
+
+                response = {
+                    "quoting": True,
+                    "posts": posts,
+                }
+                print(response)
+                return response
+
+        print(f'test{result}')
+        if result and os.path.isfile(f'gallery-dl/twitter/{result[1]['author']['name']}/{url.split("/")[5]}_1.jpg'):
+            result = result[1]
+            title = result['content']
+            user = result['author']['name']
+
+            path = f'gallery-dl/twitter/{user}/{url.split("/")[5]}'
+
+            new_path = path
+
+            count = 1
+            while os.path.isfile(f"{path}_{count}.jpg"):
+                new_path = f"{path}_"
+                count += 1
+
+            response = {
+                "url": url,
+                "title": title,
+                "path": new_path,
+                "video": False,
+                "count": count,
+            }
+        else:
+            print(data)
+            title = data[0][1]['content']
+            response = {
+                "url": url,
+                "title": title,
+                "video": False,
+                "text": True,
+            }
 
     return response
 

@@ -79,13 +79,13 @@ async def handle_response(text, chat_id, money=False, update: Update=None, conte
             return await handler(text)
 
 
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE, response = None):
     message_type = update.message.chat.type
     text = update.message.text
 
     print(f"[ {update.message.date.strftime('%Y-%m-%d %H:%M:%S')} ] User ({update.message.from_user.username}({update.message.from_user.id}))  in {message_type}({update.message.chat.id}): \n'{text}'")
 
-    response = await handle_response(text, update.message.chat.id, update=update, context=context)
+    response = response if response else await handle_response(text, update.message.chat.id, update=update, context=context)
 
     if not response:
         return
@@ -97,11 +97,15 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if response.get("video"):
         print(f'Bot: Sending video from url {response.get("url")}')
 
-        await context.bot.send_video(chat_id=update.message.chat.id, video=open(response.get("path"), 'rb'), supports_streaming=True, caption=response.get("title"))
+        if os.path.exists(response.get("path")):
+            await context.bot.send_video(chat_id=update.message.chat.id, video=open(response.get("path"), 'rb'), supports_streaming=True, caption=response.get("title"))
+            os.remove(response.get("path"))
+        else:
+            print(response)
+            await context.bot.send_message(chat_id=update.message.chat.id, text = response.get("title"))
 
-        os.remove(response.get("path"))
 
-    if not response.get("video") and not response.get("text"):
+    if not response.get("video") and not response.get("text") and not response.get("quoting"):
         if response.get("count"):
             print(f'Bot: Sending photo(s) from url {response.get("url")}')
             photos = []
@@ -127,8 +131,15 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         os.remove('audio.mp3')
 
     if response.get("text"):
-        print(f'Bot: Video from {response.get("url")} is to long')
+        print(f'Bot: Video from {response.get("url")} is to long or video or photo do not exists')
         await update.message.reply_text(response.get("title"))
+
+    if response.get("quoting"):
+        print(f'Bot: Quoting from {response.get("posts")[1]['url']}')
+        for post in response.get("posts"):
+            await handle_message(update, context=context, response=post)
+
+
 
 
 async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE = None, file = False):
