@@ -159,14 +159,14 @@ async def get_twitter(url, quote = False):
         data = data.data
 
         if not quote:
-            urls = []
+            urls = [None, None]
 
             for i in data:
                 print(i)
                 if i[0] == 2 and i[1]['quote_id'] != 0:
-                    urls.append(f'https://x.com/{i[1]['author']['name']}/status/{i[1]['tweet_id']}')
-                    urls.append(f'https://x.com/{i[1]['user']['name']}/status/{i[1]['quote_id']}')
-                    break
+                    urls[0] = f'https://x.com/{i[1]['author']['name']}/status/{i[1]['tweet_id']}'
+                if i[0] == 2 and i[1]['quote_id'] == 0:
+                    urls[1] = f'https://x.com/{i[1]['author']['name']}/status/{i[1]['tweet_id']}'
 
             config.set(("extractor", "twitter"), "quoted", False)
             config.set(("extractor", "twitter"), "text-tweets", False)
