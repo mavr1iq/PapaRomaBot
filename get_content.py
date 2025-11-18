@@ -171,7 +171,7 @@ async def get_twitter(url, quote = False):
             config.set(("extractor", "twitter"), "quoted", False)
             config.set(("extractor", "twitter"), "text-tweets", False)
 
-            if len(urls) == 2:
+            if urls[0]:
                 print(quote)
                 print(urls)
                 posts = [None, None]

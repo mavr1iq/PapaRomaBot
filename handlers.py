@@ -122,7 +122,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE, res
                 file_objects[i-1].close()
                 os.remove(f'{response.get("path")}{i}.jpg')
         else:
-            await context.bot.send_photo(chat_id=update.message.chat.id, photo=open(response.get("path"), 'rb'), caption=response.get("title"))
+            await context.bot.send_photo(chat_id=update.message.chat.id, photo=open(response.get("path"), 'rb'), caption=response.get("title"), show_caption_above_media=True)
             os.remove(response.get("path"))
 
     if response.get("audio"):
