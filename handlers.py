@@ -62,8 +62,8 @@ async def handle_response(text, chat_id, money=False, update: Update=None, conte
             await audio.download_to_drive('./voice.oga')
             return await handle_voice(update, context, file=True)
 
-    if text == '@all':
-        if update and update.message.from_user.id.__str__() == '857879424':
+    if text == '@all' or text == '@ол':
+        if update and update.message.from_user.id.__str__() == '857879424' and text != '@ол':
             return
         message = '\nДєньгі..' if chat_id == '-1002427995110' and money else ''
 
