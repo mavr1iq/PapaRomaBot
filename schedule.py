@@ -45,4 +45,4 @@ def queue(job_queue):
     job_queued = job_queue
     get_csvs()
     print(scheduled)
-    job_queue.run_once(callback_month, when=scheduled)
+    job_queue.run_once(callback_month, when=scheduled, job_kwargs=dict({'misfire_grace_time': None}))
