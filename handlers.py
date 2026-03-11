@@ -168,3 +168,4 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE = None
     if response:
         await context.bot.send_message(update.message.chat.id, response)
 
+
