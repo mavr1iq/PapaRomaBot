@@ -63,7 +63,7 @@ async def handle_response(text, chat_id, money=False, update: Update=None, conte
             return await handle_voice(update, context, file=True)
 
     if text == '@all' or text == '@ол':
-        if update and ((update.message.from_user.id.__str__() == '857879424' and text != '@ол') or (update.message.from_user.id.__str__() != '857879424' and text == '@ол')):   
+        if update and ((update.message.from_user.id.__str__() == '857879424' and text != '@ол') or (update.message.from_user.id.__str__() != '857879424' and text == '@ол')):
             return
         message = '\nДєньгі..' if chat_id == '-1002427995110' and money else ''
 
@@ -167,3 +167,4 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE = None
 
     if response:
         await context.bot.send_message(update.message.chat.id, response)
+
