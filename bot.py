@@ -1,3 +1,5 @@
+import time
+
 import handlers
 import schedule
 
@@ -16,6 +18,12 @@ async def like_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         print(
             f"[ {update.message.date.strftime('%Y-%m-%d %H:%M:%S')} ] Sending like reaction to message {update.message.reply_to_message.text} ")
         await update.message.reply_to_message.set_reaction(ReactionEmoji.RED_HEART)
+        time.sleep(1)
+        await update.message.delete()
+    else:
+        print(
+            f"[ {update.message.date.strftime('%Y-%m-%d %H:%M:%S')} ] Sending like reaction to message {update.message.text} ")
+        await update.message.set_reaction(ReactionEmoji.RED_HEART)
 
 async def report_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.reply_to_message:
