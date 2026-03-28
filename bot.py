@@ -10,8 +10,8 @@ from telegram.ext import Application, CommandHandler, MessageHandler, ContextTyp
 
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-#    await update.message.reply_text('Прівєт. Цей бот створений як колектор для забирання грошей на спотіфай преміум')
-    await update.message.reply_text('Привіт. Це тест для лабораторної')
+    await update.message.reply_text('Прівєт. Цей бот створений як колектор для забирання грошей на спотіфай преміум')
+#    await update.message.reply_text('Привіт. Це тест для лабораторної')
 
 async def like_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.reply_to_message:
