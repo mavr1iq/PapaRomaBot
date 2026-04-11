@@ -113,19 +113,58 @@ async def get_instagram(url):
 
 
 async def get_twitter(url, quote = False):
+    config.set(("extractor", "twitter"), "quoted", True)
+    config.set(("extractor", "twitter"), "text-tweets", True)
+
+    data = DataJob(url)
+    data.run()
+    data = data.data
+
     url = url.split('?')[0]
-    path = '1'
+    path = f'gallery-dl/twitter/{data[0][1]['author']['name']}'
     ydl_opts = {
         'outtmpl': path,
         'format_sort': ['res:1080', 'ext:mp4:m4a']
     }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            if not quote:
+                urls = [None, None]
+
+                for i in data:
+                    print(i)
+                    if i[0] == 2 and i[1]['quote_id'] != 0:
+                        urls[0] = f'https://x.com/{i[1]['author']['name']}/status/{i[1]['tweet_id']}'
+                        break
+                    if i[0] == 2 and i[1]['quote_id'] == 0:
+                        urls[1] = f'https://x.com/{i[1]['author']['name']}/status/{i[1]['tweet_id']}'
+
+                config.set(("extractor", "twitter"), "quoted", False)
+                config.set(("extractor", "twitter"), "text-tweets", False)
+
+                if urls[0]:
+                    print(quote)
+                    print(urls)
+                    posts = [None, None]
+                    posts[0] = await get_twitter(urls[0], quote=True)
+                    posts[1] = await get_twitter(urls[1], quote=True)
+
+                    print('posts')
+                    print(posts)
+
+                    response = {
+                        "quoting": True,
+                        "posts": posts,
+                    }
+                    print(response)
+                    return response
+
             ydl.download([url])
             info = ydl.extract_info(url, download=False)
+
             print(info.keys())
             ext = info['ext'] if 'ext' in info.keys() else info['entries'][0]['formats'][0]['ext']
-            title = info['title']
+            title = info['description']
             if not os.path.exists(f"{path}.{ext}"):
                 os.rename(path, f'{path}.{ext}')
             path = f'{path}.{ext}'
@@ -151,61 +190,26 @@ async def get_twitter(url, quote = False):
                 result = result
                 break
 
-        config.set(("extractor", "twitter"), "quoted", True)
-        config.set(("extractor", "twitter"), "text-tweets", True)
-
-        data = DataJob(url)
-        data.run()
-        data = data.data
-
-        if not quote:
-            urls = [None, None]
-
-            for i in data:
-                print(i)
-                if i[0] == 2 and i[1]['quote_id'] != 0:
-                    urls[0] = f'https://x.com/{i[1]['author']['name']}/status/{i[1]['tweet_id']}'
-                if i[0] == 2 and i[1]['quote_id'] == 0:
-                    urls[1] = f'https://x.com/{i[1]['author']['name']}/status/{i[1]['tweet_id']}'
-
-            config.set(("extractor", "twitter"), "quoted", False)
-            config.set(("extractor", "twitter"), "text-tweets", False)
-
-            if urls[0]:
-                print(quote)
-                print(urls)
-                posts = [None, None]
-                posts[0] = await get_twitter(urls[0], quote=True)
-                posts[1] = await get_twitter(urls[1], quote=True)
-
-                response = {
-                    "quoting": True,
-                    "posts": posts,
-                }
-                print(response)
-                return response
-
         print(f'test{result}')
-        if result and os.path.isfile(f'gallery-dl/twitter/{result[1]['author']['name']}/{url.split("/")[5]}_1.jpg'):
+        if result and os.path.isdir(f'gallery-dl/twitter/{result[1]['author']['name']}'):
             result = result[1]
             title = result['content']
             user = result['author']['name']
+            tweet_id = str(url.split("/")[5])
 
-            path = f'gallery-dl/twitter/{user}/{url.split("/")[5]}'
+            paths = []
+            for f in os.listdir(f'gallery-dl/twitter/{user}'):
+                if tweet_id in f:
+                    paths.append(f'gallery-dl/twitter/{user}/{f}')
 
-            new_path = path
-
-            count = 1
-            while os.path.isfile(f"{path}_{count}.jpg"):
-                new_path = f"{path}_"
-                count += 1
+            print(f'paths{paths}')
 
             response = {
                 "url": url,
                 "title": title,
-                "path": new_path,
+                "paths": paths,
                 "video": False,
-                "count": count,
+                "count": len(paths),
             }
         else:
             print(data)

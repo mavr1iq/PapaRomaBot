@@ -13,6 +13,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text('Прівєт. Цей бот створений як колектор для забирання грошей на спотіфай преміум')
 #    await update.message.reply_text('Привіт. Це тест для лабораторної')
 
+
 async def like_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.reply_to_message:
         print(
@@ -24,6 +25,7 @@ async def like_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         print(
             f"[ {update.message.date.strftime('%Y-%m-%d %H:%M:%S')} ] Sending like reaction to message {update.message.text} ")
         await update.message.set_reaction(ReactionEmoji.RED_HEART)
+
 
 async def report_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.reply_to_message:
