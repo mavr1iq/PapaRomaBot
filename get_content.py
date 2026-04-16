@@ -54,14 +54,16 @@ async def get_tiktok(url):
             print("Saved audio.mp3")
 
         video = False
-        path = ''
+        paths = []
         audio: bool = True
         count += 1
+        for i in range(1, count):
+            paths.append(f'{i}.jpg')
 
         response = {
             "url": url,
             "video": video,
-            "path": path,
+            "paths": paths,
             "count": count,
             "audio": audio,
         }
@@ -94,18 +96,26 @@ async def get_instagram(url):
     count = 1
     video = True if os.path.isfile(f"{path}/{path}.mp4") else video
     new_path = f"{path}/{path}.jpg" if os.path.isfile(f"{path}/{path}.jpg") else f"{path}/{path}.mp4"
+    paths = []
 
     while os.path.isfile(f"{path}/{path}_{count}.jpg"):
         new_path = f"{path}/{path}_"
+        paths.append(new_path+f"{count}.jpg")
         video = False
         count += 1
 
+    if video:
+        paths = new_path
+
     count = None if count == 1 else count
+
+    print(paths)
 
     response = {
         "url": url,
         "video": video,
-        "path": new_path,
+        "paths": paths,
+        "path": paths,
         "count": count
     }
 

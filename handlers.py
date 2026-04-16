@@ -112,19 +112,22 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE, res
             file_objects = []
 
             for i in response.get("paths"):
-                f = open(i, 'rb')
-                file_objects.append(f)
-                photos.append(InputMediaPhoto(f))
+                with open(i, 'rb') as f:
+                    file_objects.append(f)
+                    photos.append(InputMediaPhoto(f))
 
-            await context.bot.send_media_group(chat_id=update.message.chat.id, media=photos, caption=response.get("title"))
-
-            for i in range(1, response.get("count")):
-                file_objects[i-1].close()
+            if response.get("count") <= 10:
+                await context.bot.send_media_group(chat_id=update.message.chat.id, media=photos, caption=response.get("title"))
+            else:
+                await context.bot.send_media_group(chat_id=update.message.chat.id, media=photos[:10],
+                                                   caption=response.get("title"))
+                await context.bot.send_media_group(chat_id=update.message.chat.id, media=photos[10:])
 
         else:
             await context.bot.send_photo(chat_id=update.message.chat.id, photo=open(response.get("paths")[0], 'rb'), caption=response.get("title"), show_caption_above_media=True)
 
-        shutil.rmtree(f'gallery-dl/twitter/{response.get("paths")[0].split("/")[2]}')
+        for i in response.get("paths"):
+            os.remove(i)
 
     if response.get("audio"):
         print(f'Bot: Sending audio from url {response.get("url")}')
