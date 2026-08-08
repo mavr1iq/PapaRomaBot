@@ -270,3 +270,21 @@ async def get_youtube(url: str):
             }
 
     return response
+
+
+async def get_medal(url):
+    short_code = url.split('/')[-1].split('?')[0]
+    data = requests.get(f'https://medal.tv/api/content/{short_code}')
+    with requests.get(data.json()['contentUrl'], stream=True) as response:
+        response.raise_for_status()
+
+        with open('medal.mp4', 'wb') as video:
+            for chunk in response.iter_content(chunk_size=1024 * 1024):
+                video.write(chunk)
+
+    response = {
+        "url": url,
+        "video": True,
+        "path": 'medal.mp4'
+    }
+    return response

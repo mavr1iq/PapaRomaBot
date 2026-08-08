@@ -30,7 +30,8 @@ content_handlers = {
     "x.com": get_content.get_twitter,
     "youtube.com": get_content.get_youtube,
     "youtu.be": get_content.get_youtube,
-    "www.youtube.com": get_content.get_youtube
+    "www.youtube.com": get_content.get_youtube,
+    "medal.tv": get_content.get_medal
 }
 
 
