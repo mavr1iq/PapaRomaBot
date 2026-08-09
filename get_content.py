@@ -1,4 +1,5 @@
 import os.path
+import subprocess
 
 import pyktok as pyk
 import requests
@@ -13,7 +14,7 @@ from yt_dlp.globals import extractors
 from yt_dlp.postprocessor import FFmpegPostProcessor
 #FFmpegPostProcessor._ffmpeg_location.set(R'ffmpeg/ffmpeg.exe')
 
-from config import INSTA_PASS, INSTA_USER
+from config import INSTA_PASS, INSTA_USER, FFMPEG_PATH
 
 
 async def get_tiktok(url):
@@ -278,9 +279,28 @@ async def get_medal(url):
     with requests.get(data.json()['contentUrl'], stream=True) as response:
         response.raise_for_status()
 
-        with open('medal.mp4', 'wb') as video:
+        with open('temp.mp4', 'wb') as video:
             for chunk in response.iter_content(chunk_size=1024 * 1024):
                 video.write(chunk)
+
+    raw_filename = 'temp.mp4'
+    output_filename = 'medal.mp4'
+    ffmpeg_cmd = [
+        FFMPEG_PATH,
+        '-i',
+        raw_filename,
+        '-map',
+        '0:v',
+        '-map',
+        '0:a:0',
+        '-c',
+        'copy',
+        '-y',
+        output_filename,
+    ]
+
+    subprocess.run(ffmpeg_cmd, check=True)
+    os.remove('temp.mp4')
 
     response = {
         "url": url,
